@@ -51,14 +51,6 @@ module.exports = (sequelize, DataTypes) => {
           key: "id",
         },
       },
-      owner_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: "Owners",
-          key: "id",
-        },
-      },
       bus_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -70,7 +62,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       tableName: "Trips",
-      timestamps: false,
+      timestamps: true,
     }
   );
 

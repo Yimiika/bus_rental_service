@@ -15,14 +15,13 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(50),
         allowNull: false,
       },
-      username: {
-        type: DataTypes.STRING(50),
-        allowNull: false,
-      },
       email_address: {
         type: DataTypes.STRING(100),
         allowNull: false,
         unique: true,
+        validate: {
+          isEmail: true, // Ensures it's a valid email
+        },
       },
       phone_number: {
         type: DataTypes.STRING(15),
@@ -39,6 +38,10 @@ module.exports = (sequelize, DataTypes) => {
       number_of_ratings: {
         type: DataTypes.INTEGER,
         defaultValue: 0,
+      },
+      role: {
+        type: DataTypes.ENUM("User", "Owner", "Admin"),
+        allowNull: false,
       },
     },
     {

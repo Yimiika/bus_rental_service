@@ -1,19 +1,20 @@
 module.exports = (sequelize, DataTypes) => {
-  const Message = sequelize.define(
-    "Message",
+  const OwnerDetails = sequelize.define(
+    "OwnerDetails",
     {
       id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
         primaryKey: true,
       },
-      message: {
-        type: DataTypes.STRING(255),
+      designation: {
+        type: DataTypes.ENUM("Company", "Individual"),
         allowNull: false,
       },
-      created_at: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
+      verification_status: {
+        type: DataTypes.ENUM("Verified", "Not Verified"),
+        allowNull: false,
+        defaultValue: "Not Verified",
       },
       user_id: {
         type: DataTypes.INTEGER,
@@ -22,13 +23,14 @@ module.exports = (sequelize, DataTypes) => {
           model: "Users",
           key: "id",
         },
+        onDelete: "CASCADE",
       },
     },
     {
-      tableName: "Messages",
+      tableName: "OwnerDetails",
       timestamps: false,
     }
   );
 
-  return Message;
+  return OwnerDetails;
 };

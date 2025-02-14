@@ -1,4 +1,5 @@
-const dbConfig = require("../config/dbConfig");
+require("dotenv").config();
+const dbConfig = require("../dbConfig");
 const { Sequelize, DataTypes } = require("sequelize");
 
 const sequelize = new Sequelize(
@@ -7,9 +8,13 @@ const sequelize = new Sequelize(
   dbConfig.password,
   {
     host: dbConfig.host,
+    port: dbConfig.port,
     dialect: dbConfig.dialect,
+    logging: console.log,
   }
 );
+
+//console.log("DB Config:", dbConfig);
 
 sequelize
   .authenticate()
@@ -25,25 +30,45 @@ const db = {};
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-// Add models
+// Adding the models
 db.buses = require("./buses")(sequelize, DataTypes);
 db.trips = require("./trips")(sequelize, DataTypes);
 db.tripBuses = require("./tripBuses")(sequelize, DataTypes);
-db.owners = require("./owners")(sequelize, DataTypes);
+db.ownerDetails = require("./ownerDetails")(sequelize, DataTypes);
 db.users = require("./users")(sequelize, DataTypes);
-db.admins = require("./admins")(sequelize, DataTypes);
 db.payments = require("./payments")(sequelize, DataTypes);
 db.messages = require("./messages")(sequelize, DataTypes);
 
-// Define relationships
+// Defining relationships
+
+// Owners belong to Users (One-to-One)
+db.users.hasOne(db.ownerDetails, {
+  foreignKey: "user_id",
+  onDelete: "CASCADE",
+});
+db.ownerDetails.belongsTo(db.users, { foreignKey: "user_id" });
+
+// OwnerDetails has many Buses (One-to-Many)
+db.ownerDetails.hasMany(db.buses, {
+  foreignKey: "owner_id",
+  onDelete: "CASCADE",
+});
+db.buses.belongsTo(db.ownerDetails, { foreignKey: "owner_id" });
+
+// Buses & Trips (Many-to-Many via tripBuses)
 db.buses.belongsToMany(db.trips, { through: db.tripBuses });
 db.trips.belongsToMany(db.buses, { through: db.tripBuses });
 
-db.buses.belongsTo(db.owners, { foreignKey: "owner_id" });
-db.owners.hasMany(db.buses, { foreignKey: "owner_id" });
+// Users have many Trips (One-to-Many)
+db.users.hasMany(db.trips, { foreignKey: "user_id", onDelete: "CASCADE" });
+db.trips.belongsTo(db.users, { foreignKey: "user_id" });
 
+// Payments belong to Trips (One-to-One)
 db.payments.belongsTo(db.trips, { foreignKey: "trip_id" });
-db.trips.hasMany(db.payments, { foreignKey: "trip_id" });
+db.trips.hasOne(db.payments, { foreignKey: "trip_id" });
+
+// Messages are linked to Users (One-to-Many)
+db.users.hasMany(db.messages, { foreignKey: "user_id", onDelete: "CASCADE" });
 
 // Sync all models
 db.sequelize

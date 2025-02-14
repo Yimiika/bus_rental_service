@@ -8,7 +8,11 @@ module.exports = (sequelize, DataTypes) => {
         primaryKey: true,
       },
       vehicle_registration_number: {
-        type: DataTypes.STRING(50),
+        type: DataTypes.STRING(8),
+        allowNull: false,
+      },
+      vehicle_identification_number: {
+        type: DataTypes.STRING(17),
         allowNull: false,
       },
       bus_capacity: {
@@ -17,11 +21,11 @@ module.exports = (sequelize, DataTypes) => {
       },
       longitude: {
         type: DataTypes.FLOAT,
-        allowNull: false,
+        allowNull: true,
       },
       latitude: {
         type: DataTypes.FLOAT,
-        allowNull: false,
+        allowNull: true,
       },
       price_per_day: {
         type: DataTypes.INTEGER,
@@ -37,15 +41,17 @@ module.exports = (sequelize, DataTypes) => {
       },
       verification_status: {
         type: DataTypes.ENUM("Verified", "Not Verified"),
+        allowNull: false,
         defaultValue: "Not Verified",
       },
       owner_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "Owners",
+          model: "OwnerDetails",
           key: "id",
         },
+        onDelete: "CASCADE",
       },
       created_at: {
         type: DataTypes.DATE,
@@ -58,7 +64,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       tableName: "Buses",
-      timestamps: false,
+      timestamps: true,
     }
   );
 

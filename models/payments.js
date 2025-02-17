@@ -10,6 +10,10 @@ module.exports = (sequelize, DataTypes) => {
       trip_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        references: {
+          model: "Trips",
+          key: "id",
+        },
       },
       amount: {
         type: DataTypes.INTEGER,
@@ -41,10 +45,6 @@ module.exports = (sequelize, DataTypes) => {
       timestamps: false,
     }
   );
-
-  Payment.associate = (models) => {
-    Payment.belongsTo(models.Trip, { foreignKey: "trip_id" });
-  };
 
   return Payment;
 };

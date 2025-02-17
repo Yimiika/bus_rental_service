@@ -10,11 +10,9 @@ const sequelize = new Sequelize(
     host: dbConfig.host,
     port: dbConfig.port,
     dialect: dbConfig.dialect,
-    logging: console.log,
+    logging: false,
   }
 );
-
-//console.log("DB Config:", dbConfig);
 
 sequelize
   .authenticate()
@@ -30,7 +28,7 @@ const db = {};
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-// Adding the models
+// Adding models
 db.buses = require("./buses")(sequelize, DataTypes);
 db.trips = require("./trips")(sequelize, DataTypes);
 db.tripBuses = require("./tripBuses")(sequelize, DataTypes);
@@ -39,7 +37,7 @@ db.users = require("./users")(sequelize, DataTypes);
 db.payments = require("./payments")(sequelize, DataTypes);
 db.messages = require("./messages")(sequelize, DataTypes);
 
-// Defining relationships
+// Define relationships
 
 // Owners belong to Users (One-to-One)
 db.users.hasOne(db.ownerDetails, {

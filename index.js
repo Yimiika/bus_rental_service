@@ -3,14 +3,20 @@ const bodyParser = require("body-parser");
 const methodOverride = require("method-override");
 require("dotenv").config();
 
-const { passport, sessionMiddleware } = require("./authentication/auth"); // Import session middleware
-const rateLimiter = require("./middleware/rateLimiter");
+const {
+  passport,
+  sessionMiddleware,
+  checkRevokedToken,
+} = require("./authentication/auth");
+//const rateLimiter = require("./middleware/rateLimiter");
 const authRoute = require("./routes/auth");
-//const usersRoute = require("./routes/users");
+const usersRoute = require("./routes/users");
 //const busesRoute = require("./routes/buses");
 //const tripsRoute = require("./routes/trips");
 //const paymentsRoute = require("./routes/payments");
 //const verifyOwner = require("./middleware/verifyOwner");
+const verifyAdmin = require("./middleware/verifyAdmin");
+//const cors = require("cors");
 
 const app = express();
 
@@ -25,9 +31,22 @@ app.use(passport.session());
 app.set("views", "views");
 app.set("view engine", "ejs");
 
+// app.use(
+//   cors({
+//     origin: "http://localhost:3000",
+//     credentials: true,
+//   })
+// );
+
 // Routes
 app.use("/", authRoute);
-// app.use("/users", passport.authenticate("jwt", { session: false }), usersRoute);
+app.use(
+  "/users",
+  passport.authenticate("jwt", { session: false }),
+  checkRevokedToken,
+  verifyAdmin,
+  usersRoute
+);
 // app.use(
 //   "/buses",
 //   passport.authenticate("jwt", { session: false }),

@@ -9,9 +9,9 @@ const dbConfig = {
   dialect: "postgres",
 };
 
-console.log("DB User:", dbConfig.user);
-console.log("DB Password:", process.env.DB_PASSWORD);
-console.log("DB Name:", process.env.DB_DATABASE);
-console.log("DB Host:", process.env.DB_HOST);
+// console.log("DB User:", dbConfig.user);
+// console.log("DB Password:", process.env.DB_PASSWORD);
+// console.log("DB Name:", process.env.DB_DATABASE);
+// console.log("DB Host:", process.env.DB_HOST);
 
 module.exports = dbConfig;

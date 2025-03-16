@@ -54,8 +54,11 @@ passport.use(
     },
     async (token, done) => {
       try {
+
+        const user = await users.findOne({where: { id: token.user.id }})
+        if (!user) return done(null, false)
         // console.log(token);
-        return done(null, token.user);
+        return done(null, { id: user.id, role: user.role });
       } catch (error) {
         return done(error);
       }

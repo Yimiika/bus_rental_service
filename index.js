@@ -11,10 +11,10 @@ const {
 //const rateLimiter = require("./middleware/rateLimiter");
 const authRoute = require("./routes/auth");
 const usersRoute = require("./routes/users");
-//const busesRoute = require("./routes/buses");
+const busesRoute = require("./routes/buses");
 //const tripsRoute = require("./routes/trips");
 //const paymentsRoute = require("./routes/payments");
-//const verifyOwner = require("./middleware/verifyOwner");
+const verifyOwner = require("./middleware/verifyOwner");
 const verifyAdmin = require("./middleware/verifyAdmin");
 //const cors = require("cors");
 
@@ -47,12 +47,12 @@ app.use(
   verifyAdmin,
   usersRoute
 );
-// app.use(
-//   "/buses",
-//   passport.authenticate("jwt", { session: false }),
-//   verifyOwner,
-//   busesRoute
-// );
+app.use(
+  "/buses",
+  passport.authenticate("jwt", { session: false }),
+  // verifyOwner,
+  busesRoute
+);
 // app.use("/trips", passport.authenticate("jwt", { session: false }), tripsRoute);
 // app.use(
 //   "/payments",

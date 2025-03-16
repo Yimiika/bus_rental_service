@@ -51,7 +51,7 @@ db.ownerDetails.hasMany(db.buses, {
   foreignKey: "owner_id",
   onDelete: "CASCADE",
 });
-db.buses.belongsTo(db.ownerDetails, { foreignKey: "owner_id" });
+db.buses.belongsTo(db.ownerDetails, { foreignKey: "owner_id", as: "ownerDetails" });
 
 // Buses & Trips (Many-to-Many via tripBuses)
 db.buses.belongsToMany(db.trips, { through: db.tripBuses });

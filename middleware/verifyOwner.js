@@ -12,7 +12,7 @@ async function verifyOwner(req, res, next) {
 
     const userData = await users.findOne({ where: { id: userId } }); // Sequelize query
 
-    if (!userData || userData.user_type !== "owner") {
+    if (!userData || userData.role.toLowerCase() !== "owner") {
       return res.status(403).json({
         status: 403,
         message: "Only owners are authorized to access this resource.",

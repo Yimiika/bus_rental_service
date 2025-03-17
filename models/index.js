@@ -54,8 +54,16 @@ db.ownerDetails.hasMany(db.buses, {
 db.buses.belongsTo(db.ownerDetails, { foreignKey: "owner_id", as: "ownerDetails" });
 
 // Buses & Trips (Many-to-Many via tripBuses)
-db.buses.belongsToMany(db.trips, { through: db.tripBuses });
-db.trips.belongsToMany(db.buses, { through: db.tripBuses });
+//db.buses.belongsToMany(db.trips, { through: db.tripBuses });
+//db.trips.belongsToMany(db.buses, { through: db.tripBuses });
+db.buses.belongsToMany(db.trips, {
+  through: db.tripBuses,
+  foreignKey: "bus_id",
+});
+db.trips.belongsToMany(db.buses, {
+  through: db.tripBuses,
+  foreignKey: "trip_id",
+});
 
 // Users have many Trips (One-to-Many)
 db.users.hasMany(db.trips, { foreignKey: "user_id", onDelete: "CASCADE" });
@@ -67,6 +75,7 @@ db.trips.hasOne(db.payments, { foreignKey: "trip_id" });
 
 // Messages are linked to Users (One-to-Many)
 db.users.hasMany(db.messages, { foreignKey: "user_id", onDelete: "CASCADE" });
+db.messages.belongsTo(db.users, { foreignKey: "user_id" });
 
 // Sync all models
 db.sequelize

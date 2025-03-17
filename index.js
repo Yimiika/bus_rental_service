@@ -7,12 +7,13 @@ const {
   passport,
   sessionMiddleware,
   checkRevokedToken,
+  optionalAuth,
 } = require("./authentication/auth");
 //const rateLimiter = require("./middleware/rateLimiter");
 const authRoute = require("./routes/auth");
 const usersRoute = require("./routes/users");
 const busesRoute = require("./routes/buses");
-//const tripsRoute = require("./routes/trips");
+const tripsRoute = require("./routes/trips");
 //const paymentsRoute = require("./routes/payments");
 const verifyOwner = require("./middleware/verifyOwner");
 const verifyAdmin = require("./middleware/verifyAdmin");
@@ -50,10 +51,10 @@ app.use(
 app.use(
   "/buses",
   passport.authenticate("jwt", { session: false }),
-  // verifyOwner,
+  verifyOwner,
   busesRoute
 );
-// app.use("/trips", passport.authenticate("jwt", { session: false }), tripsRoute);
+app.use("/trips", optionalAuth, tripsRoute);
 // app.use(
 //   "/payments",
 //   passport.authenticate("jwt", { session: false }),

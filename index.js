@@ -51,7 +51,7 @@ app.use(
 app.use(
   "/buses",
   passport.authenticate("jwt", { session: false }),
-  verifyOwner,
+  //verifyOwner,
   busesRoute
 );
 app.use("/trips", optionalAuth, tripsRoute);

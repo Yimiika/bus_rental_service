@@ -33,14 +33,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      total_rating: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
-      },
-      number_of_ratings: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
-      },
       role: {
         type: DataTypes.ENUM("User", "Owner", "Admin"),
         allowNull: false,

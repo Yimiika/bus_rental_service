@@ -170,19 +170,19 @@ async function getAllTripsForOwner(req, res, next) {
   try {
     // Extract user details from request
     const userId = req.user?.id;
-    const userRole = req.user?.role;
+    //const userRole = req.user?.role;
 
-    if (!userId) {
-      return res.status(401).json({
-        message: "Unauthorized: User must be logged in to access this resource",
-      });
-    }
+    // if (!userId) {
+    //   return res.status(401).json({
+    //     message: "Unauthorized: User must be logged in to access this resource",
+    //   });
+    // }
 
-    if (userRole !== "Owner") {
-      return res.status(403).json({
-        message: "Access Denied: Only Owners can access this resource",
-      });
-    }
+    // if (userRole !== "Owner") {
+    //   return res.status(403).json({
+    //     message: "Access Denied: Only Owners can access this resource",
+    //   });
+    // }
 
     // Find the owner's ID from OwnerDetails using user_id
     const ownerDetailsData = await ownerDetails.findOne({
@@ -401,6 +401,130 @@ async function deleteTrip(req, res, next) {
   }
 }
 
+async function assignBusesToTrip(req, res, next) {
+  const { trip_id } = req.params;
+  const { bus_ids } = req.body;
+  // console.log(trip_id);
+
+  if (!Array.isArray(bus_ids) || bus_ids.length === 0) {
+    return res
+      .status(400)
+      .json({ message: "At least one bus must be provided" });
+  }
+
+  const transaction = await sequelize.transaction();
+
+  try {
+    // Check if trip exists
+    const trip = await trips.findByPk(trip_id, { transaction });
+    if (!trip) {
+      await transaction.rollback();
+      return res.status(404).json({ message: "Trip not found" });
+    }
+
+    // Validate bus IDs
+    const foundBuses = await buses.findAll({
+      where: { id: { [Op.in]: bus_ids } },
+      transaction,
+    });
+
+    if (foundBuses.length !== bus_ids.length) {
+      await transaction.rollback();
+      return res.status(404).json({ message: "One or more buses not found" });
+    }
+
+    // Check if buses are already assigned to this trip
+    const existingAssignments = await tripBuses.findAll({
+      where: { trip_id, bus_id: { [Op.in]: bus_ids } },
+      transaction,
+    });
+
+    const alreadyAssignedBusIds = existingAssignments.map(
+      (record) => record.bus_id
+    );
+    const newBusIds = bus_ids.filter(
+      (bus_id) => !alreadyAssignedBusIds.includes(bus_id)
+    );
+
+    if (newBusIds.length === 0) {
+      await transaction.rollback();
+      return res
+        .status(400)
+        .json({ message: "All buses are already assigned to this trip" });
+    }
+
+    // Assign new buses to the trip
+    const tripBusRecords = newBusIds.map((bus_id) => ({ trip_id, bus_id }));
+    await tripBuses.bulkCreate(tripBusRecords, { transaction });
+
+    await transaction.commit();
+
+    return res.status(201).json({
+      message: "Buses assigned to trip successfully",
+      assignedBuses: newBusIds,
+    });
+  } catch (err) {
+    await transaction.rollback();
+    console.error("Error assigning buses to trip:", err);
+    next(err);
+  }
+}
+
+async function removeBusFromTrip(req, res, next) {
+  const { trip_id, bus_id } = req.params;
+
+  const transaction = await sequelize.transaction();
+
+  try {
+    // Check if the trip exists
+    const trip = await trips.findByPk(trip_id, { transaction });
+    if (!trip) {
+      await transaction.rollback();
+      return res.status(404).json({ message: "Trip not found" });
+    }
+
+    // Check if the bus is assigned to the trip
+    const tripBusEntry = await tripBuses.findOne({
+      where: { trip_id, bus_id },
+      transaction,
+    });
+
+    if (!tripBusEntry) {
+      await transaction.rollback();
+      return res
+        .status(404)
+        .json({ message: "Bus is not assigned to this trip" });
+    }
+
+    // Remove the bus from the trip
+    await tripBuses.destroy({ where: { trip_id, bus_id }, transaction });
+
+    // Check if there are any buses left for the trip
+    const remainingBuses = await tripBuses.count({
+      where: { trip_id },
+      transaction,
+    });
+
+    if (remainingBuses === 0) {
+      await trips.destroy({ where: { id: trip_id }, transaction });
+      await transaction.commit();
+      return res
+        .status(200)
+        .json({ message: "Bus removed, and trip deleted as no buses remain" });
+    }
+
+    await transaction.commit();
+
+    return res
+      .status(200)
+      .json({ message: "Bus removed from trip successfully" });
+  } catch (err) {
+    await transaction.rollback();
+    console.error("Error removing bus from trip:", err);
+    next(err);
+  }
+}
+
 module.exports = {
   createTrip,
   getAllTrips,
@@ -408,4 +532,6 @@ module.exports = {
   updateTrip,
   deleteTrip,
   getAllTripsForOwner,
+  removeBusFromTrip,
+  assignBusesToTrip,
 };

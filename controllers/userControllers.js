@@ -1,5 +1,6 @@
 const { users, ownerDetails } = require("../models");
 const { Op } = require("sequelize");
+const ratingController = require("./ratingsControllers");
 
 // Get all users with filtering, pagination, and sorting
 function formatRole(role) {
@@ -83,24 +84,32 @@ async function getAllUsers(req, res, next) {
       return res.status(404).json({ message: "No users found" });
     }
 
-    return res.status(200).json({
-      users: userList.map((user) => ({
-        user_id: user.id,
-        last_name: user.last_name,
-        first_name: user.first_name,
-        email_address: user.email_address,
-        phone_number: user.phone_number,
-        role: user.role,
-        ownerDetails: user.ownerDetail
-          ? {
-              designation: user.ownerDetail.designation,
-              verification_status: user.ownerDetail.verification_status,
-            }
-          : null, // Attach owner details if available
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      })),
-    });
+    // Fetch ratings for each user
+    const usersWithRatings = await Promise.all(
+      userList.map(async (user) => {
+        const ratingDetails = await ratingController.getUsersRating(user.id);
+
+        return {
+          user_id: user.id,
+          last_name: user.last_name,
+          first_name: user.first_name,
+          email_address: user.email_address,
+          phone_number: user.phone_number,
+          role: user.role,
+          ownerDetails: user.ownerDetail
+            ? {
+                designation: user.ownerDetail.designation,
+                verification_status: user.ownerDetail.verification_status,
+              }
+            : null,
+          ratings: ratingDetails,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        };
+      })
+    );
+
+    return res.status(200).json({ users: usersWithRatings });
   } catch (err) {
     console.error("Error fetching users:", err);
     next(err);

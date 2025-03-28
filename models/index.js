@@ -2,17 +2,22 @@ require("dotenv").config();
 const dbConfig = require("../dbConfig");
 const { Sequelize, DataTypes } = require("sequelize");
 
-const sequelize = new Sequelize(
-  dbConfig.database,
-  dbConfig.user,
-  dbConfig.password,
-  {
-    host: dbConfig.host,
-    port: dbConfig.port,
-    dialect: dbConfig.dialect,
-    logging: false,
-  }
-);
+// const sequelize = new Sequelize(
+//   dbConfig.database,
+//   dbConfig.user,
+//   dbConfig.password,
+//   {
+//     host: dbConfig.host,
+//     port: dbConfig.port,
+//     dialect: dbConfig.dialect,
+//     logging: false,
+//   }
+// );
+
+const sequelize = new Sequelize(process.env.DIRECT_URL, {
+  dialect: "postgres",
+  logging: false,
+});
 
 sequelize
   .authenticate()

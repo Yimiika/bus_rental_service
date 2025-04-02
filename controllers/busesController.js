@@ -265,7 +265,6 @@ async function updateBusDetails(req, res, next) {
     const Bus = await buses.findByPk(busId)
     if(!Bus) {
       return res.status(404).json({
-        status: 404,
         messsage: "Bus is not found"
       })
     }
@@ -315,7 +314,12 @@ async function updateBusDetails(req, res, next) {
 async function verifyBuses(req, res, next) {
   try {
     const busId = req.params.id
-    const { verification_status } = req.body
+    let { verification_status } = req.body
+
+    verification_status = verification_status?.trim().toLowerCase() === "verified" ? "Verified" 
+                        :verification_status?.trim().toLowerCase() === "not verified" ? "Not Verified" 
+                        :null
+
 
     if(!["Verified", "Not Verified"].includes(verification_status)) {
       return res.status(400).json({

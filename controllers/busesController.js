@@ -1,5 +1,5 @@
 const { Op } = require('sequelize')
-const { buses, ownerDetails, messages } = require('../models')
+const { buses, ownerDetails, messages, trips } = require('../models')
 
 async function getAllBuses(req, res, next) {
   try {
@@ -83,6 +83,22 @@ async function getAllBuses(req, res, next) {
       order: [[sortFields, sortOrder]],
       limit: parseInt(limit),
       include: [
+        {
+          model: trips,
+          as: "trips",
+          attributes: ["trip_status", "created_at" ],
+          required: false,
+          where: {
+            [Op.or]: [
+              {trip_status: "Completed"},
+              {id: {[Op.is]: null}}
+            ]
+          },
+          // get only latest trip
+          order: [["created_at", "DESC"]],
+          limit: 1
+
+        },
         {
           model: ownerDetails,
           as: "ownerDetails",

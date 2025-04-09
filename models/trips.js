@@ -12,7 +12,7 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: "Ongoing",
       },
       trip_distance: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.FLOAT,
         allowNull: false,
       },
       start_longitude: {
@@ -35,27 +35,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      created_at: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
-      updated_at: {
-        type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
-      },
       user_id: {
         type: DataTypes.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
           model: "Users",
-          key: "id",
-        },
-      },
-      bus_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-          model: "Buses",
           key: "id",
         },
       },

@@ -342,12 +342,19 @@ async function getTripById(req, res, next) {
 // Update trip details
 
 async function updateTrip(req, res, next) {
+  const transaction = await sequelize.transaction(); // Create transaction
+
   try {
     const { id } = req.params;
-    const { pickup_address, destination_address, rental_purpose, bus_ids } =
-      req.body;
+    const {
+      pickup_address,
+      destination_address,
+      rental_purpose,
+      bus_ids,
+      trip_status,
+    } = req.body;
 
-    const trip = await trips.findByPk(id);
+    const trip = await trips.findByPk(id, { transaction });
     if (!trip) {
       return res.status(404).json({ message: "Trip not found" });
     }
@@ -362,13 +369,15 @@ async function updateTrip(req, res, next) {
       }
     }
 
-    await trip.update({
-      pickup_address: pickup_address ?? trip.pickup_address,
-      destination_address: destination_address ?? trip.destination_address,
-      rental_purpose: rental_purpose ?? trip.rental_purpose,
-      price: price ?? trip.price,
-      trip_status: formattedStatus,
-    });
+    await trip.update(
+      {
+        pickup_address: pickup_address ?? trip.pickup_address,
+        destination_address: destination_address ?? trip.destination_address,
+        rental_purpose: rental_purpose ?? trip.rental_purpose,
+        trip_status: formattedStatus,
+      },
+      { transaction }
+    );
 
     let totalPrice = trip.price;
 
@@ -381,11 +390,11 @@ async function updateTrip(req, res, next) {
       });
 
       if (foundBuses.length !== bus_ids.length) {
-        await transaction.rollback();
+        await transaction.rollback(); // Rollback if buses not found
         return res.status(404).json({ message: "One or more buses not found" });
       }
 
-      if (bus_ids && Array.isArray(bus_ids) && bus_ids.length > 0) {
+      if (bus_ids.length > 0) {
         // Check for ongoing trips for any of the provided bus IDs
         const ongoingTrips = await trips.findAll({
           where: {
@@ -398,9 +407,11 @@ async function updateTrip(req, res, next) {
               id: bus_ids,
             },
           },
+          transaction,
         });
 
         if (ongoingTrips.length > 0) {
+          await transaction.rollback();
           return res.status(400).json({
             error: "One or more buses are already in an ongoing trip.",
           });
@@ -430,22 +441,19 @@ async function updateTrip(req, res, next) {
       );
     }
 
-    // Update trip
+    // Update trip with recalculated price
     await trip.update(
       {
-        pickup_address: pickup_address || trip.pickup_address,
-        destination_address: destination_address || trip.destination_address,
-        rental_purpose: rental_purpose || trip.rental_purpose,
         price: totalPrice,
       },
       { transaction }
     );
 
-    await transaction.commit();
+    await transaction.commit(); // Commit the transaction
 
     return res.status(200).json({ message: "Trip updated successfully", trip });
   } catch (error) {
-    await transaction.rollback();
+    await transaction.rollback(); // Rollback on error
     console.error(error);
     return res.status(500).json({ message: "Internal Server Error" });
   }

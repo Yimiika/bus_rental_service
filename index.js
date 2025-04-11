@@ -5,7 +5,7 @@ require("dotenv").config();
 
 const {
   passport,
-  sessionMiddleware,
+  //sessionMiddleware,
   checkRevokedToken,
   optionalAuth,
 } = require("./authentication/auth");
@@ -26,9 +26,9 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(methodOverride("_method"));
 
-app.use(sessionMiddleware);
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(sessionMiddleware);
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 app.set("views", "views");
 app.set("view engine", "ejs");

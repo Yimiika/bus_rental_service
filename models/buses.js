@@ -10,10 +10,12 @@ module.exports = (sequelize, DataTypes) => {
       vehicle_registration_number: {
         type: DataTypes.STRING(8),
         allowNull: false,
+        unique: true,
       },
       vehicle_identification_number: {
         type: DataTypes.STRING(17),
         allowNull: false,
+        unique: true,
       },
       bus_capacity: {
         type: DataTypes.INTEGER,

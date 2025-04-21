@@ -68,6 +68,11 @@ db.trips.hasOne(db.payments, { foreignKey: "trip_id" });
 // Messages are linked to Users (One-to-Many)
 db.users.hasMany(db.messages, { foreignKey: "user_id", onDelete: "CASCADE" });
 
+// getting trips, users, payment information accross these models
+db.trips.belongsTo(db.users, { foreignKey: "user_id" });
+db.trips.belongsTo(db.buses, { foreignKey: "bus_id" });
+db.payments.belongsTo(db.trips, { foreignKey: "trip_id" });
+
 // Sync all models
 db.sequelize
   .sync({ alter: true })

@@ -1,9 +1,6 @@
 const axios = require("axios")
-const { payment, messages } = require("../models")
-const pdfDoc = require("pdfkit")
-const fs = require("fs")
+const { payment, trips, buses, users } = require("../models")
 require("dotenv").config()
-const nodemailer = require("nodemailer");
 
 
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET
@@ -19,7 +16,7 @@ async function initializePayment(req, res) {
       {
         email,
         amount: amountInKobo,
-        callback_url: "https://yourapp.com/api/payments/verify",
+        callback_url: "http://localhost:3000/api/payments/verify",
       },
       {
         headers: {
@@ -78,21 +75,36 @@ async function getPaymentSummary(req, res) {
   try {
     const { trip_id } = req.params
 
-    const busPayment = await payment.findOne({ where: { trip_id } })
+    const busPayment = await payment.findOne({
+      where: { trip_id },
+      include: {
+        model: trips,
+        include: [ users, buses ]
+      }
+    });
 
-    if(!busPayment) {
+    if(!busPayment || busPayment.trips) {
       return res.status(404).json({ message:"Payment not found" })
     }
 
-    return res.status(200).json({
-      message: "Payment Summary",
-      data: {
-        trip_id: busPayment.trip_id,
-        amount: busPayment.amount,
+    const tripPayment = busPayment.trips
+    const userPayment = tripPayment.users;
+    const bus = tripPayment.buses;
+
+    const summary = {
+        customer_name: `${userPayment.first_name} ${userPayment.last_name}`,
+        bus_type: bus.vehicle_type,
+        duration: tripPayment.duration,
+        booking_type: tripPayment.booking_type,
+        pickup_date: tripPayment.pickup_date,
+        total_amount: busPayment.amount,
         payment_method: busPayment.payment_method,
-        payment_status: busPayment.payment_status,
-        created_at: busPayment.created_at
-      }
+        payment_status: busPayment.payment_status
+    };
+
+    return res.status(200).json({
+      message: "Booking Summary",
+      data: summary
     })
   } catch (error) {
     return res.status(500).json({error: error.message})
@@ -102,30 +114,32 @@ async function getPaymentSummary(req, res) {
 async function generateReceipt(req, res) {
   try {
     const { trip_id } = req.params
-    const busPayment = await payment.findOne({ where: { trip_id } })
+    const busPayment = await payment.findOne({
+      where: { trip_id },
+      include: {
+        model: trips,
+        include: [ users, buses ]
+      }
+    });
 
-    if(!busPayment) {
-      return res.status(404).json({ message: "Payment not found" })
+    if(!busPayment || busPayment.trips ) {
+      return res.status(404).json({ message: "Payment or Trip not found" })
     }
 
-    const doc = new pdfDoc()
-    const fileName = `receipt_${trip_id}.pdf`
-    const filePath = `./receipts/${fileName}`
+    const tripPayment = busPayment.trips;
+    const userPayment = tripPayment.users;
+    const bus = tripPayment.buses;
 
-    doc.pipe(fs.createWriteStream(filePath))
-
-    doc.fontSize(20).text("ValueRide Rental", { align: "center" })
-    doc.moveDown()
-    doc.fontSize(16).text(`Trip ID: ${busPayment.trip_id}`)
-    doc.text(`Amount Paid: ₦${busPayment.amount}`);
-    doc.text(`Payment Method: ${busPayment.payment_method}`);
-    doc.text(`Payment Status: ${busPayment.payment_status}`);
-    doc.text(`Date: ${ new Date(busPayment.created_at).toLocaleString()}`)
-    doc.end()
+    const filePath = await generateReceiptPDF(
+      tripPayment,
+      userPayment,
+      bus,
+      busPayment
+    );
 
     return res.status(200).json({
       message: "Receipt generated",
-      filePath
+      data: { filePath }
     })
   } catch (error) {
     return res.status(500).json({ error: error.message })
@@ -134,26 +148,32 @@ async function generateReceipt(req, res) {
 
 async function sendEmailReceipt(req, res) {
   try {
-    const { trip_id, email } = req.body;
-    const filePath = `./receipts/receipt_${trip_id}.pdf`;
+    const { trip_id } = req.params;
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER, 
-        pass: process.env.EMAIL_PASS, 
+    const busPayment = await payment.findOne({
+      where: { trip_id },
+      include: {
+        model: trips,
+        include: [users, buses],
       },
     });
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Payment Receipt",
-      text: "Thank you for your payment. Find your receipt attached.",
-      attachments: [{ filename: `receipt_${trip_id}.pdf`, path: filePath }],
-    };
+    if (!busPayment || !busPayment.trips) {
+      return res.status(404).json({ message: "Payment or trip not found" })
+    }
 
-    await transporter.sendMail(mailOptions);
+    const tripPayment = busPayment.trips;
+    const userPayment = tripPayment.users;
+    const bus = tripPayment.buses;
+
+    const filePath = await getReceipt(
+      tripPayment,
+      userPayment,
+      bus,
+      busPayment
+    );
+
+    await sendEmail(userPayment.email_address, filePath, tripPayment.id);
 
     return res.status(200).json({ message: "Receipt sent to email" });
   } catch (error) {

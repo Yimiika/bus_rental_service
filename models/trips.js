@@ -56,6 +56,26 @@ module.exports = (sequelize, DataTypes) => {
           key: "id",
         },
       },
+      // bus_id: {
+      //   type: DataTypes.INTEGER,
+      //   allowNull: false,
+      //   references: {
+      //     model: "Buses",
+      //     key: "id",
+      //   },
+      // },
+      // booking_type: {
+      //   type: DataTypes.ENUM("Company", "Personal"),
+      //   allowNull: false,
+      // },
+      // duration: {
+      //   type: DataTypes.STRING,
+      //   allowNull: false,
+      // },
+      // pickup_date: {
+      //   type: DataTypes.DATEONLY,
+      //   allowNull: false,
+      // },
     },
     {
       tableName: "Trips",

@@ -26,6 +26,10 @@ async function createTrip(req, res, next) {
       destination_address,
       rental_purpose,
       bus_ids, //an array of bus ids
+      // booking_type,
+      // pickup_date,
+      // duration,
+      // bus_id,
     } = req.body;
 
     const userId = req.user ? req.user.id : null; // User is optional
@@ -34,7 +38,11 @@ async function createTrip(req, res, next) {
     if (
       pickup_address === undefined ||
       destination_address === undefined ||
-      rental_purpose === undefined
+      rental_purpose === undefined 
+      // booking_type === undefined ||
+      // pickup_date === undefined ||
+      // duration === undefined ||
+      // bus_id === undefined
     ) {
       return res
         .status(400)
@@ -114,6 +122,10 @@ async function createTrip(req, res, next) {
         pickup_address,
         destination_address,
         rental_purpose,
+        // booking_type,
+        // pickup_date, 
+        // duration,
+        // bus_id,
         price: totalPrice,
         user_id: userId,
       },

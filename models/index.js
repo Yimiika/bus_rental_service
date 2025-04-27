@@ -2,22 +2,22 @@ require("dotenv").config();
 const dbConfig = require("../dbConfig");
 const { Sequelize, DataTypes } = require("sequelize");
 
-// const sequelize = new Sequelize(
-//   dbConfig.database,
-//   dbConfig.user,
-//   dbConfig.password,
-//   {
-//     host: dbConfig.host,
-//     port: dbConfig.port,
-//     dialect: dbConfig.dialect,
-//     logging: false,
-//   }
-// );
+const sequelize = new Sequelize(
+  dbConfig.database,
+  dbConfig.user,
+  dbConfig.password,
+  {
+    host: dbConfig.host,
+    port: dbConfig.port,
+    dialect: dbConfig.dialect,
+    logging: false,
+  }
+);
 
-const sequelize = new Sequelize(process.env.DIRECT_URL, {
-  dialect: "postgres",
-  logging: false,
-});
+// const sequelize = new Sequelize(process.env.DIRECT_URL, {
+//   dialect: "postgres",
+//   logging: false,
+// });
 
 sequelize
   .authenticate()
@@ -105,6 +105,11 @@ db.trips.hasMany(db.ratings, { foreignKey: "trip_id", as: "trip_ratings" });
 db.ratings.belongsTo(db.trips, { foreignKey: "trip_id", as: "trip" });
 db.ratings.belongsTo(db.users, { foreignKey: "rater_id", as: "rater" });
 db.ratings.belongsTo(db.users, { foreignKey: "rated_id", as: "rated" });
+
+// getting trips, users, payment information accross these models
+db.trips.belongsTo(db.users, { foreignKey: "user_id" });
+// db.trips.belongsTo(db.buses, { foreignKey: "bus_id" });
+db.payments.belongsTo(db.trips, { foreignKey: "trip_id" });
 
 // Sync all models
 db.sequelize

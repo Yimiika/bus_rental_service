@@ -42,7 +42,8 @@ authRouter.post("/login", (req, res, next) => {
         return next(loginError);
       }
 
-      const body = { id: user.id };
+      //const body = { id: user.id };
+      const body = { id: user.id, role: user.role };
       const token = jwt.sign({ user: body }, process.env.JWT_SECRET, {
         expiresIn: "1h",
       });

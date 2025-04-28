@@ -12,12 +12,12 @@ require("sequelize");
 require("dotenv").config();
 
 //Create session middleware
-const sessionMiddleware = session({
-  secret: process.env.SESSION_SECRET,
-  resave: false,
-  saveUninitialized: true,
-  cookie: { maxAge: 60 * 60 * 1000 },
-});
+// const sessionMiddleware = session({
+//   secret: process.env.SESSION_SECRET,
+//   resave: false,
+//   saveUninitialized: true,
+//   cookie: { maxAge: 60 * 60 * 1000 },
+// });
 
 const checkRevokedToken = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -32,18 +32,18 @@ const checkRevokedToken = (req, res, next) => {
 };
 
 // Passport Session Setup (for session-based authentication)
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
+// passport.serializeUser((user, done) => {
+//   done(null, user.id);
+// });
 
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await users.findByPk(id);
-    done(null, user);
-  } catch (error) {
-    done(error, null);
-  }
-});
+// passport.deserializeUser(async (id, done) => {
+//   try {
+//     const user = await users.findByPk(id);
+//     done(null, user);
+//   } catch (error) {
+//     done(error, null);
+//   }
+// });
 
 // JWT Authentication Strategy
 passport.use(
@@ -54,9 +54,8 @@ passport.use(
     },
     async (token, done) => {
       try {
-
-        const user = await users.findOne({where: { id: token.user.id }})
-        if (!user) return done(null, false)
+        const user = await users.findOne({ where: { id: token.user.id } });
+        if (!user) return done(null, false);
         // console.log(token);
         return done(null, { id: user.id, role: user.role });
       } catch (error) {
@@ -230,4 +229,17 @@ passport.use(
   )
 );
 
-module.exports = { sessionMiddleware, passport, checkRevokedToken };
+const optionalAuth = (req, res, next) => {
+  passport.authenticate("jwt", { session: false }, (err, user) => {
+    if (err) return next(err);
+    req.user = user || null;
+    next();
+  })(req, res, next);
+};
+
+module.exports = {
+  // sessionMiddleware,
+  passport,
+  checkRevokedToken,
+  optionalAuth,
+};

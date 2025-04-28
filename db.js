@@ -13,6 +13,11 @@ const sequelize = new Sequelize(
   }
 );
 
+// const sequelize = new Sequelize(process.env.DIRECT_URL, {
+//   dialect: "postgres",
+//   logging: false,
+// });
+
 async function connectToDb() {
   try {
     await sequelize.authenticate();

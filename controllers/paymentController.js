@@ -1,9 +1,11 @@
 const axios = require("axios")
-const { payment, trips, buses, users } = require("../models")
+const { payments, trips, buses, users } = require("../models")
 require("dotenv").config()
+const generateReceiptPDF = require("../utils/getReceipt")
+const sendEmail = require("../utils/sendEmail")
 
 
-const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET
+const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 
 async function initializePayment(req, res) {
   try {
@@ -16,7 +18,10 @@ async function initializePayment(req, res) {
       {
         email,
         amount: amountInKobo,
-        callback_url: "http://localhost:3000/api/payments/verify",
+        callback_url: "http://localhost:3000/frontend/payments/verify",
+        metadata: {
+          trip_id: trip_id
+        },
       },
       {
         headers: {
@@ -26,7 +31,7 @@ async function initializePayment(req, res) {
       }
     );
     if (response.data.status) {
-      await payment.create({
+      await payments.create({
         trip_id,
         amount,
         payment_method,
@@ -49,25 +54,63 @@ async function verifyPayment(req, res) {
   try {
     const { reference } = req.query
 
+    if (!reference) {
+        return res.status(400).json({ message: "Reference is required" });
+      }
+
+    console.log("verifying reference:", reference)
+
     const response = await axios.get(
       `https://api.paystack.co/transaction/verify/${reference}`,
       {
         headers: { Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`}
       },
     );
+    
+    // return res.status(200).json({
+    //   step: "Check Paystack response",
+    //   rawData: response.data
+    // })
+
+    console.log("Paystack verification response:", response.data)
     const paymentData = response.data.data
 
     if (paymentData.status === "success") {
-      await payment.update(
+
+      const tripId = paymentData?.metadata?.trip_id;
+
+      if (!tripId) {
+        return res.status(400).json({
+          step: "Trip ID Check",
+          message: "Trip ID not found in Paystack metadata",
+          paymentData,
+        });
+      }
+      const updated = await payments.update(
         { payment_status: "Completed" },
-        { where: { trip_id: paymentData.metadata.trip_id } }
+        { where: { trip_id: tripId } }
       )
-      return res.status(200).json({ message: "Payment successfully verified" })
+      return res.status(200).json({ 
+        step: "Database update", 
+        message: "Payment successfully verified", 
+        updated 
+      })
     } else {
-      return res.status(200).json({ message: "Payment verification failed" })
+      return res.status(200).json({ 
+        step: "verification status", 
+        message: "Payment verification failed", 
+        paymentData 
+      })
     }
   } catch (error) {
-    return res.status(500).json({ error: error.message })
+    console.error(
+      "Verify error:",
+      error?.response?.data || error.message || error
+    );
+    return res.status(500).json({
+      step: "Catch Block",
+      error: error?.response?.data || error.message || "Unknown error",
+    });
   }
 }
 
@@ -75,7 +118,7 @@ async function getPaymentSummary(req, res) {
   try {
     const { trip_id } = req.params
 
-    const busPayment = await payment.findOne({
+    const busPayment = await payments.findOne({
       where: { trip_id },
       include: {
         model: trips,
@@ -83,19 +126,19 @@ async function getPaymentSummary(req, res) {
       }
     });
 
-    if(!busPayment || busPayment.trips) {
+    if(!busPayment || !busPayment.trips) {
       return res.status(404).json({ message:"Payment not found" })
     }
 
     const tripPayment = busPayment.trips
-    const userPayment = tripPayment.users;
-    const bus = tripPayment.buses;
+    // const userPayment = tripPayment.users;
+    // const bus = tripPayment.buses;
 
     const summary = {
-        customer_name: `${userPayment.first_name} ${userPayment.last_name}`,
-        bus_type: bus.vehicle_type,
-        duration: tripPayment.duration,
-        booking_type: tripPayment.booking_type,
+        // customer_name: `${userPayment.first_name} ${userPayment.last_name}`,
+        // bus_type: bus.vehicle_type,
+        // duration: tripPayment.duration,
+        // booking_type: tripPayment.booking_type,
         pickup_date: tripPayment.pickup_date,
         total_amount: busPayment.amount,
         payment_method: busPayment.payment_method,
@@ -114,7 +157,7 @@ async function getPaymentSummary(req, res) {
 async function generateReceipt(req, res) {
   try {
     const { trip_id } = req.params
-    const busPayment = await payment.findOne({
+    const busPayment = await payments.findOne({
       where: { trip_id },
       include: {
         model: trips,
@@ -122,7 +165,7 @@ async function generateReceipt(req, res) {
       }
     });
 
-    if(!busPayment || busPayment.trips ) {
+    if(!busPayment || !busPayment.trips ) {
       return res.status(404).json({ message: "Payment or Trip not found" })
     }
 
@@ -150,7 +193,7 @@ async function sendEmailReceipt(req, res) {
   try {
     const { trip_id } = req.params;
 
-    const busPayment = await payment.findOne({
+    const busPayment = await payments.findOne({
       where: { trip_id },
       include: {
         model: trips,
@@ -166,7 +209,7 @@ async function sendEmailReceipt(req, res) {
     const userPayment = tripPayment.users;
     const bus = tripPayment.buses;
 
-    const filePath = await getReceipt(
+    const filePath = await generateReceiptPDF(
       tripPayment,
       userPayment,
       bus,

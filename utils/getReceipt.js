@@ -12,12 +12,12 @@ const getReceipt = async (tripPayment, userPayment, bus, busPayment) => {
   doc.fontSize(20).text("Bus Rental Receipt", { align: "center" });
   doc.moveDown();
 
-  doc
-    .fontSize(14)
-    .text(`Customer Name: ${userPayment.first_name} ${userPayment.last_name}`);
-  doc.text(`Bus Type: ${bus.vehicle_type}`);
-  doc.text(`Booking Type: ${tripPayment.booking_type || "N/A"}`);
-  doc.text(`Duration: ${tripPayment.duration || "N/A"}`);
+  // doc
+  //   .fontSize(14)
+  //   .text(`Customer Name: ${userPayment.first_name} ${userPayment.last_name}`);
+  // doc.text(`Bus Type: ${bus.vehicle_type}`);
+  // doc.text(`Booking Type: ${tripPayment.booking_type || "N/A"}`);
+  // doc.text(`Duration: ${tripPayment.duration || "N/A"}`);
   doc.text(
     `Pickup Date: ${
       tripPayment.pickup_date
@@ -28,7 +28,7 @@ const getReceipt = async (tripPayment, userPayment, bus, busPayment) => {
   doc.text(`Total Amount: ₦${busPayment.amount}`);
   doc.text(`Payment Method: ${busPayment.payment_method}`);
   doc.text(`Payment Status: ${busPayment.payment_status}`);
-  doc.text(`Receipt Date: ${new Date(busPayment.created_at).toLocaleString()}`);
+  // doc.text(`Receipt Date: ${new Date(busPayment.created_at).toLocaleString()}`);
 
   doc.end();
 

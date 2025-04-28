@@ -42,6 +42,7 @@ db.users = require("./users")(sequelize, DataTypes);
 db.payments = require("./payments")(sequelize, DataTypes);
 db.messages = require("./messages")(sequelize, DataTypes);
 db.ratings = require("./ratings")(sequelize, DataTypes);
+db.contacts = require("./contacts")(sequelize, DataTypes);
 
 // Define relationships
 

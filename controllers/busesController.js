@@ -17,6 +17,7 @@ async function getAllBuses(req, res, next) {
       sort = "createdAt",
       order = "desc",
       limit = 20,
+      available_days = "",
       ...invalidKeys
     } = req.query;
 
@@ -120,14 +121,11 @@ async function getAllBuses(req, res, next) {
         {
           model: trips,
           as: "trips",
-          attributes: ["trip_status", "created_at"],
+          attributes: ["trip_status", "createdAt"],
           required: false,
           where: {
             [Op.or]: [{ trip_status: "Completed" }, { id: { [Op.is]: null } }],
           },
-          // get only latest trip
-          order: [["created_at", "DESC"]],
-          limit: 1,
         },
         {
           model: ownerDetails,
@@ -142,20 +140,22 @@ async function getAllBuses(req, res, next) {
       return res.status(404).json({ message: "No buses found" });
     }
 
-    return res.status(200).json({
-      buses: busList.map((bus) => ({
+    const response = busList.map((bus) => {
+      // sort trips (if any) and take the most recent
+      const latestTrip = bus.trips?.length
+        ? [...bus.trips].sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          )[0]
+        : null;
+
+      return {
         bus_id: bus.id,
         vehicle_registration_number: bus.vehicle_registration_number,
         vehicle_identification_number: bus.vehicle_identification_number,
         bus_capacity: bus.bus_capacity,
+        verification_status: bus.verification_status,
         price_per_day: bus.price_per_day,
-        // commission: bus.commission,
         vehicle_type: bus.vehicle_type,
-        // verification_status: bus.verification_status,
-        // location: bus.latitude && bus.longitude ? {
-        //   latitude: bus.latitude,
-        //   longitude: bus.longitude
-        // } : null,
         available_days: {
           monday: bus.available_monday,
           tuesday: bus.available_tuesday,
@@ -165,16 +165,23 @@ async function getAllBuses(req, res, next) {
           saturday: bus.available_saturday,
           sunday: bus.available_sunday,
         },
-        ownerDetails: bus.OwnerDetail
+        ownerDetails: bus.ownerDetails
           ? {
-              designation: bus.OwnerDetail.designation,
-              verification_status: bus.OwnerDetail.verification_status,
+              designation: bus.ownerDetails.designation,
+              verification_status: bus.ownerDetails.verification_status,
+            }
+          : null,
+        latest_trip: latestTrip
+          ? {
+              id: latestTrip.id,
+              status: latestTrip.trip_status,
             }
           : null,
         createdAt: bus.createdAt,
         updatedAt: bus.updatedAt,
-      })),
+      };
     });
+    return res.status(200).json({ buses: response });
   } catch (error) {
     console.error("Error getting all buses:", error);
     next(error);

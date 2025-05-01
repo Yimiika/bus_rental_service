@@ -14,4 +14,6 @@ const dbConfig = {
 // console.log("DB Name:", process.env.DB_DATABASE);
 // console.log("DB Host:", process.env.DB_HOST);
 
+
+
 module.exports = dbConfig;

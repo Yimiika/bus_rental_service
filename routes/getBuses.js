@@ -4,7 +4,7 @@ const getBusesController = require('../controllers/busesController')
 
 
 getBusesRouter.get("/", getBusesController.getAllBuses);
-getBusesRouter.get("/:id", busesController.getBus);
+getBusesRouter.get("/:id", getBusesController.getBus);
 
 
 module.exports = getBusesRouter

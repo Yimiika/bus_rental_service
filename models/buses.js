@@ -10,31 +10,33 @@ module.exports = (sequelize, DataTypes) => {
       vehicle_registration_number: {
         type: DataTypes.STRING(8),
         allowNull: false,
+        unique: true,
       },
       vehicle_identification_number: {
         type: DataTypes.STRING(17),
         allowNull: false,
+        unique: true,
       },
       bus_capacity: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      longitude: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-      },
-      latitude: {
-        type: DataTypes.FLOAT,
-        allowNull: true,
-      },
+      // longitude: {
+      //   type: DataTypes.FLOAT,
+      //   allowNull: true,
+      // },
+      // latitude: {
+      //   type: DataTypes.FLOAT,
+      //   allowNull: true,
+      // },
       price_per_day: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      commission: {
-        type: DataTypes.FLOAT,
-        allowNull: false,
-      },
+      // commission: {
+      //   type: DataTypes.FLOAT,
+      //   allowNull: false,
+      // },
       vehicle_type: {
         type: DataTypes.ENUM("Luxury Van", "Basic Coaster"),
         allowNull: false,
@@ -52,6 +54,34 @@ module.exports = (sequelize, DataTypes) => {
           key: "id",
         },
         onDelete: "CASCADE",
+      },
+      available_monday: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      available_tuesday: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      available_wednesday: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      available_thursday: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      available_friday: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      available_saturday: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      available_sunday: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
       },
     },
     {

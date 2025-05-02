@@ -168,7 +168,7 @@ async function getAllBuses(req, res, next) {
         ownerDetails: bus.ownerDetails
           ? {
               designation: bus.ownerDetails.designation,
-              verification_status: bus.ownerDetails.verification_status,
+              // verification_status: bus.ownerDetails.verification_status,
             }
           : null,
         latest_trip: latestTrip
@@ -203,7 +203,7 @@ async function getBus(req, res, next) {
         {
           model: ownerDetails,
           as: "ownerDetails",
-          attributes: ["designation", "verification_status"],
+          attributes: ["designation"],
           required: false,
         },
       ],

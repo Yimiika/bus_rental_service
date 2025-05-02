@@ -11,11 +11,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.ENUM("Company", "Individual"),
         allowNull: false,
       },
-      verification_status: {
-        type: DataTypes.ENUM("Verified", "Not Verified"),
-        allowNull: false,
-        defaultValue: "Not Verified",
-      },
+      // verification_status: {
+      //   type: DataTypes.ENUM("Verified", "Not Verified"),
+      //   allowNull: false,
+      //   defaultValue: "Not Verified",
+      // },
       user_id: {
         type: DataTypes.INTEGER,
         allowNull: false,

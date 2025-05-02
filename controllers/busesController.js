@@ -130,7 +130,7 @@ async function getAllBuses(req, res, next) {
         {
           model: ownerDetails,
           as: "ownerDetails",
-          attributes: ["designation", "verification_status"],
+          attributes: ["designation"],
           required: false,
         },
       ],

@@ -292,16 +292,23 @@ async function addBus(req, res, next) {
       available_sunday,
     } = req.body;
 
+    console.log("Request Body:", req.body);
+
     if (
-      !vehicle_identification_number ||
-      // || !verification_status
-      !vehicle_registration_number ||
-      !vehicle_type ||
-      !bus_capacity ||
-      !price_per_day
+      // !vehicle_identification_number ||
+      // !verification_status ||
+      // !vehicle_registration_number ||
+      // !vehicle_type ||
+      // !bus_capacity ||
+      // !price_per_day
       // ||!longitude
       // ||!latitude
       // ||!commission
+      typeof vehicle_identification_number !== "string" ||
+      typeof vehicle_registration_number !== "string" ||
+      !["Luxury Van", "Basic Coaster"].includes(vehicle_type) ||
+      typeof bus_capacity !== "number" ||
+      typeof price_per_day !== "number"
     ) {
       return res.status(400).json({
         status: 400,
@@ -368,7 +375,7 @@ async function updateBusDetails(req, res, next) {
     const Bus = await buses.findByPk(busId);
     if (!Bus) {
       return res.status(404).json({
-        messsage: "Bus is not found",
+        messsage: "Bus Not Found",
       });
     }
 

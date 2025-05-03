@@ -83,6 +83,7 @@ app.use(
   // passport.authenticate("jwt", { session: false }),
   paystackRoute
 );
+
 app.use("/trips", optionalAuth, tripsRoute);
 // app.use(
 //   "/payments",

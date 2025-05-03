@@ -33,10 +33,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      commission: {
-        type: DataTypes.FLOAT,
-        allowNull: false,
-      },
+      // commission: {
+      //   type: DataTypes.FLOAT,
+      //   allowNull: false,
+      // },
       vehicle_type: {
         type: DataTypes.ENUM("Luxury Van", "Basic Coaster"),
         allowNull: false,

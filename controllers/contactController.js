@@ -2,9 +2,16 @@ const { contacts } = require("../models")
 const nodemailer = require("nodemailer")
 
 async function contactUs(req, res) {
+  const { first_name, last_name, email, subject, message_text } = req.body;
+  
+  
   try {
-    const { first_name, last_name, email, subject, message_text } = req.body;
-
+    if (!first_name || !last_name || !email || !subject || !message_text) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required.",
+      });
+    }    
     // console.log("Creating contact...");
 
     const contact = await contacts.create({
@@ -33,16 +40,14 @@ async function contactUs(req, res) {
       to: process.env.COMPANY_EMAIL,
       subject: `Bus Rental Contact: ${subject}`,
       text: `
-        first_name: ${first_name}
-        last_name: ${last_name}
+        Name: ${first_name} ${last_name}
         Email: ${email}
         Subject: ${subject}
         Message: ${message_text}
       `,
       html: `
         <h2>New Contact Form Submission</h2>
-        <p><strong>Name:</strong> ${first_name}</p>
-        <p><strong>Name:</strong> ${last_name}</p>
+        <p><strong>Name:</strong> ${first_name} ${last_name}</p>
         <p><strong>Email:</strong> ${email}</p>
         <p><strong>Subject:</strong> ${subject}</p>
         <p><strong>Message:</strong></p>

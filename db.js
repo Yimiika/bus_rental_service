@@ -18,6 +18,7 @@ const sequelize = new Sequelize(process.env.DIRECT_URL, {
   logging: false,
 });
 
+
 async function connectToDb() {
   try {
     await sequelize.authenticate();

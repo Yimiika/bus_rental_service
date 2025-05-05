@@ -21,6 +21,7 @@ const paymentsRoute = require("./routes/payment");
 
 const tripsRoute = require("./routes/trips");
 const ratingsRoute = require("./routes/ratings");
+const getBusesRoute = require("./routes/getBuses")
 
 //const paymentsRoute = require("./routes/payments");
 const verifyOwner = require("./middleware/verifyOwner");
@@ -69,6 +70,13 @@ app.use(
   //verifyOwner,
   busesRoute
 );
+
+app.use(
+  "/getbuses",
+  // passport.authenticate("jwt", { session: false }),
+  checkRevokedToken,
+  //verifyOwner,
+  getBusesRoute)
 
 app.use("/bus-rental", contactRoute)
 // app.use("/trips", passport.authenticate("jwt", { session: false }), tripsRoute);

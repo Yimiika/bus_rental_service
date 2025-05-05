@@ -19,6 +19,7 @@ const sequelize = new Sequelize(process.env.DIRECT_URL, {
   logging: false,
 });
 
+
 sequelize
   .authenticate()
   .then(() => {
@@ -69,6 +70,7 @@ db.buses.belongsTo(db.ownerDetails, {
 db.buses.belongsToMany(db.trips, {
   through: db.tripBuses,
   foreignKey: "bus_id",
+  as: "trips"
 });
 db.trips.belongsToMany(db.buses, {
   through: db.tripBuses,

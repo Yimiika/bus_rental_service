@@ -5,7 +5,7 @@ async function contactUs(req, res) {
   try {
     const { first_name, last_name, email, subject, message_text } = req.body;
 
-    console.log("Creating contact...");
+    // console.log("Creating contact...");
 
     const contact = await contacts.create({
       first_name,
@@ -15,7 +15,7 @@ async function contactUs(req, res) {
       message_text,
     });
 
-    console.log("Contact created:", contact.id);
+    // console.log("Contact created:", contact.id);
 
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -65,9 +65,9 @@ async function contactUs(req, res) {
     });
   } catch (err) {
     console.error("Contact form error:", err.message);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Server error',
+    res.status(500).json({
+      success: false,
+      message: err.message,
     });
   } 
 }

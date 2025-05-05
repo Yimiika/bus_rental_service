@@ -5,8 +5,7 @@ const verifyOwner = require("../middleware/verifyOwner")
 const verifyAdmin = require("../middleware/verifyAdmin")
 
 
-busesRouter.get("/", busesController.getAllBuses)
-busesRouter.get("/:id", busesController.getBus);
+
 busesRouter.post("/", verifyOwner , busesController.addBus)
 busesRouter.put("/:id", (req, res, next) => {
   if (!req.user || !req.user.role) {

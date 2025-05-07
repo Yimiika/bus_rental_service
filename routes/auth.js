@@ -94,8 +94,11 @@ authRouter.get(
         expiresIn: "1h",
       }
     );
-
-    res.redirect(`http://localhost:3000?token=${token}`);
+    const frontendUrl = process.env.FRONTEND_URL;
+    // || "http://localhost:3000";
+    console.log(frontendUrl);
+    res.redirect(`${frontendUrl}?token=${token}`);
+    //res.redirect(`http://localhost:3000?token=${token}`);
   }
 );
 

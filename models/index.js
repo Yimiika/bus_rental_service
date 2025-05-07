@@ -19,6 +19,7 @@ const sequelize = new Sequelize(process.env.DIRECT_URL, {
   logging: false,
 });
 
+
 sequelize
   .authenticate()
   .then(() => {
@@ -42,6 +43,7 @@ db.users = require("./users")(sequelize, DataTypes);
 db.payments = require("./payments")(sequelize, DataTypes);
 db.messages = require("./messages")(sequelize, DataTypes);
 db.ratings = require("./ratings")(sequelize, DataTypes);
+db.contacts = require("./contacts")(sequelize, DataTypes);
 
 // Define relationships
 
@@ -68,6 +70,7 @@ db.buses.belongsTo(db.ownerDetails, {
 db.buses.belongsToMany(db.trips, {
   through: db.tripBuses,
   foreignKey: "bus_id",
+  as: "trips"
 });
 db.trips.belongsToMany(db.buses, {
   through: db.tripBuses,
@@ -105,6 +108,11 @@ db.trips.hasMany(db.ratings, { foreignKey: "trip_id", as: "trip_ratings" });
 db.ratings.belongsTo(db.trips, { foreignKey: "trip_id", as: "trip" });
 db.ratings.belongsTo(db.users, { foreignKey: "rater_id", as: "rater" });
 db.ratings.belongsTo(db.users, { foreignKey: "rated_id", as: "rated" });
+
+// getting trips, users, payment information accross these models
+db.trips.belongsTo(db.users, { foreignKey: "user_id" });
+// db.trips.belongsTo(db.buses, { foreignKey: "bus_id" });
+db.payments.belongsTo(db.trips, { foreignKey: "trip_id" });
 
 // Sync all models
 db.sequelize

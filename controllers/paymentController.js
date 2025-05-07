@@ -18,7 +18,7 @@ async function initializePayment(req, res) {
       {
         email,
         amount: amountInKobo,
-        callback_url: "http://localhost:3000/payment/verify?reference=",
+        callback_url: "http://localhost:3000/frontend/payments/verify",
         metadata: {
           trip_id: trip_id
         },
